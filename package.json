@@ -1,0 +1,23 @@
+{
+  "name": "mdl-sync",
+  "version": "0.0.1",
+  "description": "Mendeley sync script",
+  "main": "app.js",
+  "scripts": {
+    "test": "test.js"
+  },
+  "keywords": [
+    "mendeley"
+  ],
+  "author": "Burke Chih-Jen Ko",
+  "license": "MIT",
+  "dependencies": {
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "fs": "0.0.1-security",
+    "phantom": "^3.2.1",
+    "phantomjs": "^2.1.7",
+    "request": "^2.79.0",
+    "simple-oauth2": "^1.0.1",
+  }
+}
