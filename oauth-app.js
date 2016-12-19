@@ -21,13 +21,16 @@ module.exports = function(app, config) {
     let cookieParser = require('cookie-parser');
     let Bluebird = require('bluebird');
     let fs = require('fs');
+    let appConfig = require('./appConfig');
 
     let accessTokenCookieName = 'accessToken';
     let refreshTokenCookieName = 'refreshToken';
     let tokenExchangePath = '/oauth/token-exchange';
     let documents = [];
+    let members = [];
     let total;
     let startTime = new Date().getTime();
+    let endpoint = '/members';
 
     app.use(cookieParser());
 
@@ -43,8 +46,8 @@ module.exports = function(app, config) {
             console.log('No token set - authenticate');
             res.locals.authFlow.authenticate();
         } else {
-            console.log('Access token set, redirecting to', '/group');
-            res.redirect('/group');
+            console.log('Access token set, redirecting to', endpoint);
+            res.redirect(endpoint);
         }
     });
 
@@ -58,7 +61,7 @@ module.exports = function(app, config) {
         });
 
         let options = {
-            profile_id: "9f94630a-5585-3ec3-980d-65173c916aaf",
+            profile_id: appConfig.gbifProfileId,
             view: "all",
             limit: "100"
         };
@@ -68,7 +71,7 @@ module.exports = function(app, config) {
                 console.info('There are ' + result.total + ' documents in total');
                 total = result.total;
                 documents = documents.concat(result.items);
-                return documentPager(result);
+                return resultsPager(result, documents);
             })
             .then(function(result){
                 if (result === 'done') {
@@ -79,6 +82,48 @@ module.exports = function(app, config) {
                         var timeLapsed = (endTime - startTime) / 1000;
 
                         var message = 'Documents retrieved and saved. Time lapsed: ' + timeLapsed + ' seconds.';
+                        console.info(message);
+                        res.json({message: message});
+                        process.exit(0);
+                    });
+                }
+            })
+            .catch(function(reason) {
+                res.status(reason.status).send();
+            })
+    });
+
+    app.get('/members', function(req, res) {
+        let api = sdk({
+            authFlow: sdk.Auth.refreshTokenFlow({
+                refreshToken: req.cookies[refreshTokenCookieName],
+                clientId: config.clientId,
+                clientSecret: config.clientSecret
+            })
+        });
+
+        let options = {
+            profile_id: appConfig.gbifPublicGroupId,
+            view: "all",
+            limit: "100"
+        };
+
+        api.groups.members(appConfig.gbifPublicGroupId, options)
+            .then(function(result) {
+                console.info('There are ' + result.total + ' members in total');
+                total = result.total;
+                members = members.concat(result.items);
+                return resultsPager(result, members);
+            })
+            .then(function(result){
+                if (result === 'done') {
+                    // @todo write to a sensible place.
+                    fs.writeFile('/tmp/members.json', JSON.stringify(members), (err) => {
+                        if (err) throw err;
+                        var endTime = new Date().getTime();
+                        var timeLapsed = (endTime - startTime) / 1000;
+
+                        var message = 'Members retrieved and saved. Time lapsed: ' + timeLapsed + ' seconds.';
                         console.info(message);
                         res.json({message: message});
                         process.exit(0);
@@ -103,7 +148,7 @@ module.exports = function(app, config) {
                 res.redirect('/logout');
             } else {
                 setCookies(res, result);
-                res.redirect('/group');
+                res.redirect(endpoint);
             }
         });
     });
@@ -133,14 +178,14 @@ module.exports = function(app, config) {
         });
     });
 
-    function documentPager(result) {
+    function resultsPager(result, container) {
         return new Bluebird(function(resolve, reject){
             if (typeof result.next === 'function') {
                 result.next()
                     .then(function(result){
-                        documents = documents.concat(result.items);
-                        console.info('Retrieved ' + documents.length + ' documents.');
-                        resolve(documentPager(result));
+                        container = container.concat(result.items);
+                        console.info('Retrieved ' + container.length + ' items.');
+                        resolve(resultsPager(result, container));
                     })
                     .catch(function(err){
                         reject(err);
