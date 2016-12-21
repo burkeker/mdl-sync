@@ -113,12 +113,23 @@ module.exports = function(app, config) {
                 console.info('There are ' + result.total + ' members in total');
                 total = result.total;
                 members = members.concat(result.items);
-                return resultsPager(result, members);
+                return resultsPager(result, members, total);
             })
-            .then(function(result){
-                if (result === 'done') {
-                    // @todo write to a sensible place.
-                    fs.writeFile('/tmp/members.json', JSON.stringify(members), (err) => {
+            /*
+            .then(function(members){
+                if (members.length > 0) {
+                    const promises = members.map(member => {
+                        api.profiles.retrieve(member.profile_id)
+                            .then(result => {
+                                return membersDetail.push(result);
+                            })
+                    });
+                    return Promise.all(promises);
+                }
+            })
+            .then(function(members){
+                if (members.length > 0) {
+                    return fs.writeFile('/tmp/members.json', JSON.stringify(members), (err) => {
                         if (err) throw err;
                         var endTime = new Date().getTime();
                         var timeLapsed = (endTime - startTime) / 1000;
@@ -130,6 +141,7 @@ module.exports = function(app, config) {
                     });
                 }
             })
+            */
             .catch(function(reason) {
                 res.status(reason.status).send();
             })
@@ -178,21 +190,21 @@ module.exports = function(app, config) {
         });
     });
 
-    function resultsPager(result, container) {
+    function resultsPager(result, container, total) {
         return new Bluebird(function(resolve, reject){
             if (typeof result.next === 'function') {
                 result.next()
                     .then(function(result){
                         container = container.concat(result.items);
                         console.info('Retrieved ' + container.length + ' items.');
-                        resolve(resultsPager(result, container));
+                        resolve(resultsPager(result, container, total));
                     })
                     .catch(function(err){
                         reject(err);
                     });
             }
-            else {
-                resolve('done');
+            else if (container.length == total) {
+                resolve(container);
             }
         });
     }
