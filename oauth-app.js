@@ -20,6 +20,7 @@ module.exports = function(app, config) {
     let sdk = require('@mendeley/api');
     let cookieParser = require('cookie-parser');
     let Bluebird = require('bluebird');
+    let jsonexport = require('jsonexport');
     let fs = require('fs');
     let appConfig = require('./appConfig');
 
@@ -115,36 +116,32 @@ module.exports = function(app, config) {
                 members = members.concat(result.items);
                 return resultsPager(result, members, total);
             })
-            /*
             .then(function(members){
                 if (members.length > 0) {
-                    const promises = members.map(member => {
-                        api.profiles.retrieve(member.profile_id)
-                            .then(result => {
-                                return membersDetail.push(result);
-                            })
-                    });
+                    const promises = members.map(member => api.profiles.retrieve(member.profile_id));
                     return Promise.all(promises);
                 }
             })
-            .then(function(members){
-                if (members.length > 0) {
-                    return fs.writeFile('/tmp/members.json', JSON.stringify(members), (err) => {
-                        if (err) throw err;
-                        var endTime = new Date().getTime();
-                        var timeLapsed = (endTime - startTime) / 1000;
+            .then(function(membersDetail){
+                if (membersDetail.length > 0) {
+                    jsonexport(membersDetail, function(err, csv){
+                        if (err) return new Error(err.message);
+                        return fs.writeFile('/tmp/members.csv', csv, (err) => {
+                            if (err) throw err;
+                            var endTime = new Date().getTime();
+                            var timeLapsed = (endTime - startTime) / 1000;
 
-                        var message = 'Members retrieved and saved. Time lapsed: ' + timeLapsed + ' seconds.';
-                        console.info(message);
-                        res.json({message: message});
-                        process.exit(0);
+                            var message = 'Members retrieved and saved. Time lapsed: ' + timeLapsed + ' seconds.';
+                            console.info(message);
+                            res.json({message: message});
+                            process.exit(0);
+                        });
                     });
                 }
             })
-            */
             .catch(function(reason) {
                 res.status(reason.status).send();
-            })
+            });
     });
 
     app.get(tokenExchangePath, function (req, res, next) {

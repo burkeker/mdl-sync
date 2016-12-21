@@ -15,6 +15,7 @@
     "@mendeley/api": "^6.3.4",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
+    "jsonexport": "^1.5.1",
     "phantom": "^3.2.1",
     "phantomjs": "^2.1.7",
     "request": "^2.79.0",
