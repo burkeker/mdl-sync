@@ -125,6 +125,7 @@ module.exports = function(app, config) {
             .then(function(membersDetail){
                 if (membersDetail.length > 0) {
                     // strip out unnecessary objects.
+                    /*
                     membersDetail.map(function(member){
                         let redundent = ['discipline', 'desciplines', 'photo', 'photos'];
                         redundent.map(function(property){
@@ -138,16 +139,17 @@ module.exports = function(app, config) {
                     };
                     jsonexport(membersDetail, function(err, csv){
                         if (err) return new Error(err.message);
-                        return fs.writeFile('/tmp/members.csv', csv, (err) => {
-                            if (err) throw err;
-                            var endTime = new Date().getTime();
-                            var timeLapsed = (endTime - startTime) / 1000;
+                    });
+                     */
+                    return fs.writeFile('/tmp/members.json', JSON.stringify(membersDetail), (err) => {
+                        if (err) throw err;
+                        var endTime = new Date().getTime();
+                        var timeLapsed = (endTime - startTime) / 1000;
 
-                            var message = 'Members retrieved and saved. Time lapsed: ' + timeLapsed + ' seconds.';
-                            console.info(message);
-                            res.json({message: message});
-                            process.exit(0);
-                        });
+                        var message = 'Members retrieved and saved. Time lapsed: ' + timeLapsed + ' seconds.';
+                        console.info(message);
+                        res.json({message: message});
+                        process.exit(0);
                     });
                 }
             })
