@@ -124,6 +124,18 @@ module.exports = function(app, config) {
             })
             .then(function(membersDetail){
                 if (membersDetail.length > 0) {
+                    // strip out unnecessary objects.
+                    membersDetail.map(function(member){
+                        let redundent = ['discipline', 'desciplines', 'photo', 'photos'];
+                        redundent.map(function(property){
+                            if (member.hasOwnProperty(property)) {
+                                delete(member[property]);
+                            }
+                        });
+                    });
+                    let exportOptions = {
+                        rowDelimiter: "\t"
+                    };
                     jsonexport(membersDetail, function(err, csv){
                         if (err) return new Error(err.message);
                         return fs.writeFile('/tmp/members.csv', csv, (err) => {
