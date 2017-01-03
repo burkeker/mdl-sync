@@ -31,7 +31,7 @@ module.exports = function(app, config) {
     let members = [];
     let total;
     let startTime = new Date().getTime();
-    let endpoint = '/members';
+    let endpoint = '/group';
 
     app.use(cookieParser());
 
@@ -72,22 +72,19 @@ module.exports = function(app, config) {
                 console.info('There are ' + result.total + ' documents in total');
                 total = result.total;
                 documents = documents.concat(result.items);
-                return resultsPager(result, documents);
+                return resultsPager(result, documents, total);
             })
-            .then(function(result){
-                if (result === 'done') {
-                    // @todo write to a sensible place.
-                    fs.writeFile('/tmp/documents.json', JSON.stringify(documents), (err) => {
-                        if (err) throw err;
-                        var endTime = new Date().getTime();
-                        var timeLapsed = (endTime - startTime) / 1000;
+            .then(function(documents){
+                fs.writeFile(appConfig.targetDocumentPath + '/documents.json', JSON.stringify(documents), (err) => {
+                    if (err) throw err;
+                    var endTime = new Date().getTime();
+                    var timeLapsed = (endTime - startTime) / 1000;
 
-                        var message = 'Documents retrieved and saved. Time lapsed: ' + timeLapsed + ' seconds.';
-                        console.info(message);
-                        res.json({message: message});
-                        process.exit(0);
-                    });
-                }
+                    var message = 'Documents retrieved and saved. Time lapsed: ' + timeLapsed + ' seconds.';
+                    console.info(message);
+                    res.json({message: message});
+                    process.exit(0);
+                });
             })
             .catch(function(reason) {
                 res.status(reason.status).send();
@@ -214,7 +211,7 @@ module.exports = function(app, config) {
                         reject(err);
                     });
             }
-            else if (container.length == total) {
+            else if (container.length === total) {
                 resolve(container);
             }
         });
