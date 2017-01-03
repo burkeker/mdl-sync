@@ -1,4 +1,5 @@
 #!/bin/bash
 
-node app.js &
+node app.js & export PID=$!
 casperjs authenticate.js
+kill $PID
