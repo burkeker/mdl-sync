@@ -22,7 +22,7 @@ casper.on("page.error", function(msg, trace) {
     this.echo("Mendeley authentication page error: " + msg, "ERROR");
 });
 
-casper.start('http://localhost:' + appConfig.appPort, function(){
+casper.start(appConfig.appUrl + ':' + appConfig.appPort, function(){
     this.waitForSelector('#login');
 });
 

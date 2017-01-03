@@ -30,6 +30,6 @@ app.use(function(error, req, res, next) {
 });
 
 // Run the server
-let server = app.listen(port, function() {
+let server = app.listen(port, 'localhost', function() {
     console.info('App running on port: ' + port + ', using "' + config.responseType + '" oauth flow');
 });

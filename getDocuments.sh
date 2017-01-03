@@ -6,8 +6,9 @@ touch $LOGFILE
 cat /dev/null > $LOGFILE
 
 STARTTIME=$(date +%s)
-node app.js > $LOGFILE 2>&1 &
+node app.js > $LOGFILE 2>&1 & export PID=$!
 casperjs authenticate.js >> $LOGFILE 2>&1
+kill $PID
 
 ENDTIME=$(date +%s)
 echo "It takes $(($ENDTIME - $STARTTIME)) seconds to complete Mendeley document retrieval."
