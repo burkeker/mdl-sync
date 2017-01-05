@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = {
-    appUrl: 'http://localhost',
-    appPort: 3001,
+    appUrl: 'http://127.0.0.1',
+    appPort: 3010,
     credentialFilePath: '/etc/portal16/credentials.json', // use a path of your choice
     targetDocumentPath: '/tmp/', // use a path of your choice
     gbifPublicGroupId: 'dcb8ff61-dbc0-3519-af76-2072f22bc22f',
