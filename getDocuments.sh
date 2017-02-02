@@ -7,6 +7,7 @@ cat /dev/null > $LOGFILE
 
 STARTTIME=$(date +%s)
 node app.js > $LOGFILE 2>&1 & export PID=$!
+sleep 5
 casperjs authenticate.js >> $LOGFILE 2>&1
 kill $PID
 
